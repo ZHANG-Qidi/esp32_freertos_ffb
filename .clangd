@@ -1,0 +1,6 @@
+CompileFlags:
+    Remove: [-f*, -m*]
+    Add: [-Wno-pp-hash-error]
+Diagnostics:
+    UnusedIncludes: None
+    Suppress: ["pp_hash_error", "pp_file_not_found", "undeclared_var_use"]
