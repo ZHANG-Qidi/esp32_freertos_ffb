@@ -9,8 +9,14 @@ idf_component_register(
     INCLUDE_DIRS
         ${CMAKE_CURRENT_LIST_DIR}/src
     PRIV_REQUIRES
+        esp_driver_gpio
+        esp_driver_uart
+        esp_driver_i2c
+        esp_driver_spi
+        esp_driver_ledc
+        esp_driver_mcpwm
+        esp_timer
         esp_tinyusb
-    REQUIRES
         Arduino-FOC-2.2
         ArduinoCore-avr-1.8.7
 )

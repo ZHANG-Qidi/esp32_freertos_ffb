@@ -1,20 +1,25 @@
 idf_component_register(
     SRCS
-    "main.cpp"
+        "main.cpp"
     INCLUDE_DIRS
-    "."
+        "."
     PRIV_REQUIRES
-    nvs_flash
-    esp_event
-    esp_netif
-    esp_wifi
-    esp_driver_gpio
-    esp_driver_uart
-    esp_driver_gptimer
+        nvs_flash
+        esp_event
+        esp_netif
+        esp_wifi
+        esp_driver_gpio
+        esp_driver_uart
+        esp_driver_gptimer
+        esp_driver_i2c
+        esp_driver_spi
+        esp_driver_ledc
+        esp_driver_mcpwm
+        esp_timer
     REQUIRES
-    ArduinoCore-avr-1.8.7
-    Arduino-FOC-2.2
-    HID_FFB_0.0.1
+        ArduinoCore-avr-1.8.7
+        Arduino-FOC-2.2
+        HID-FFB-0.1
 )
 
 target_compile_options(${COMPONENT_LIB} PRIVATE

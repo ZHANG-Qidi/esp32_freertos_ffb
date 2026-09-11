@@ -10,8 +10,7 @@ idf_component_register(
         ${CMAKE_CURRENT_LIST_DIR}/cores/arduino
         ${CMAKE_CURRENT_LIST_DIR}/libraries/Wire/src
         ${CMAKE_CURRENT_LIST_DIR}/libraries/SPI/src
-        ${CMAKE_SOURCE_DIR}
-    REQUIRES
+    PRIV_REQUIRES
         esp_driver_gpio
         esp_driver_uart
         esp_driver_i2c
