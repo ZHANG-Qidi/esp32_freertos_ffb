@@ -4,7 +4,6 @@
 
 #include "esp_log.h"
 #include "ffb_loop.h"
-#include "freertos_port.h"
 #include "hidReportDesc.h"
 static const char *TAG = "ffb_setup";
 //******************************** FFB Private //********************************

@@ -2,8 +2,6 @@
 #define _FFB_SETUP_H_
 #include <math.h>
 #include <stdint.h>
-
-#include "freertos_port.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

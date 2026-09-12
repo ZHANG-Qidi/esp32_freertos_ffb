@@ -1,6 +1,5 @@
 #ifndef _FFB_LOOP_H_
 #define _FFB_LOOP_H_
-#include "freertos_port.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -3,8 +3,8 @@
 #include "SimpleFOC.h"
 #include "esp_log.h"
 #include "ffb_loop.h"
+#include "ffb_setup.h"
 #include "foc_setup.h"
-#include "freertos_port.h"
 // static const char *TAG = "foc_loop";
 static float wheel_rad_g;
 void foc_output(float *wheel_rad) { *wheel_rad = wheel_rad_g; }
@@ -19,6 +19,20 @@ void foc_loop(void) {
     ffb_output(&constant_force, &damper);
     float damping = damper * motor.shaft_velocity / DAMPING_MAX_VELOCITY;
     float torque_ratio = constant_force - damping;
+    float angle = motor.shaft_angle;
+    const float STOP_ZONE = 0.1f;
+    const float STOP_FORCE = 0.3f;
+    if (angle < -WHEEL_HALF) {
+        float x = (-WHEEL_HALF - angle) / STOP_ZONE;
+        x = x > 1.0f ? 1.0f : x;
+        float stop_force = x * x * STOP_FORCE;
+        torque_ratio += stop_force;
+    } else if (angle > WHEEL_HALF) {
+        float x = (angle - WHEEL_HALF) / STOP_ZONE;
+        x = x > 1.0f ? 1.0f : x;
+        float stop_force = x * x * STOP_FORCE;
+        torque_ratio -= stop_force;
+    }
     torque_ratio = torque_ratio > 1.0f ? 1.0f : (torque_ratio < -1.0f ? -1.0f : torque_ratio);
     // voltage set point variable
     float target_voltage = VOLTAGE_LIMIT * torque_ratio;
