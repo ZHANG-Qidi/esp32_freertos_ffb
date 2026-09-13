@@ -8,6 +8,7 @@ idf_component_register(
         ${ARDUINO_FOC_SRC}
     INCLUDE_DIRS
         ${CMAKE_CURRENT_LIST_DIR}/src
+        ${CMAKE_SOURCE_DIR}/main
     PRIV_REQUIRES
         esp_driver_gpio
         esp_driver_uart
