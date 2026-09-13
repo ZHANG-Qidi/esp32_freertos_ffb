@@ -24,7 +24,7 @@ static void blink_loop(void) {
     /* If the addressable LED is enabled */
     if (s_led_state) {
         /* Set the LED pixel using RGB from 0 (0%) to 255 (100%) for each color */
-        led_strip_set_pixel(led_strip, 0, 16, 16, 16);
+        led_strip_set_pixel(led_strip, 0, 0, 2, 0);
         /* Refresh the strip to send data */
         led_strip_refresh(led_strip);
     } else {
