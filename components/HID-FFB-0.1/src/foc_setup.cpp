@@ -1,8 +1,6 @@
 #include "foc_setup.h"
 
-#include "ArduinoConfig.h"
 #include "SimpleFOC.h"
-#include "SimpleFOCConfig.h"
 // magnetic sensor
 // magnetic sensor instance - SPI
 MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, SPI_MASTER_CS_IO);
