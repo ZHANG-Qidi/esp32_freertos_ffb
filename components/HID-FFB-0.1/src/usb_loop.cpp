@@ -103,7 +103,7 @@ void usb_loop(void) {
     foc_output(&wheel_rad);
     float wheel_rad_clamped = wheel_rad > WHEEL_HALF ? WHEEL_HALF : (wheel_rad < -WHEEL_HALF ? -WHEEL_HALF : wheel_rad);
     joy.axis_x = JOYSTIC_AXIS_LOGICAL_MID + wheel_rad_clamped / WHEEL_HALF * JOYSTIC_AXIS_LOGICAL_MID;
-    joy.axis_rx = JOYSTIC_AXIS_LOGICAL_MAX * adc_output(0);
+    joy.axis_rx = JOYSTIC_AXIS_LOGICAL_MAX * (1.0f - adc_output(0));
     joy.axis_ry = JOYSTIC_AXIS_LOGICAL_MAX * adc_output(1);
     joy.axis_rz = JOYSTIC_AXIS_LOGICAL_MAX * adc_output(2);
     tud_hid_report(TLID, &joy, sizeof(hid_joystick_input_t));
