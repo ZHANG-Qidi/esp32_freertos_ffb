@@ -26,6 +26,11 @@ extern "C" {
 #define UART_MASTER_TX_IO (CONFIG_ARDUINO_UART_TXD)
 #define UART_MASTER_RX_IO (CONFIG_ARDUINO_UART_RXD)
 
+// ADC
+#define ADC_GPIO_0 (4)
+#define ADC_GPIO_1 (5)
+#define ADC_GPIO_2 (6)
+
 #ifdef __cplusplus
 }
 #endif

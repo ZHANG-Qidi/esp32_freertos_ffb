@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 
+#include "adc_loop.h"
+#include "adc_setup.h"
 #include "driver/gpio.h"
 #include "driver/gptimer.h"
 #include "ffb_loop.h"
@@ -12,6 +14,7 @@
 #include "tusb.h"
 #include "usb_loop.h"
 #include "usb_setup.h"
+
 static const char *TAG = "main";
 /* Use project configuration menu (idf.py menuconfig) to choose the GPIO to blink,
    or you can edit the following line and set a number here.
@@ -105,6 +108,14 @@ void ffb_task(__unused void *params) {
         vTaskDelayUntil(&last, pdMS_TO_TICKS(USB_POLLING_INTERVAL));
     }
 }
+void adc_task(__unused void *params) {
+    adc_setup();
+    TickType_t last = xTaskGetTickCount();
+    for (;;) {
+        vTaskDelayUntil(&last, pdMS_TO_TICKS(ADC_READ_INTERVAL));
+        adc_loop();
+    }
+}
 // Priorities of our threads - higher numbers are higher priority
 #define MAIN_TASK_PRIORITY (tskIDLE_PRIORITY + osPriorityBelowNormal)
 #define BLINK_TASK_PRIORITY (tskIDLE_PRIORITY + osPriorityLow)
@@ -139,6 +150,7 @@ extern "C" void app_main(void) {
     xTaskCreate(foc_task, "foc_task", WORKER_TASK_STACK_SIZE, NULL, WORKER_TASK_PRIORITY, &foc_task_handle);
     xTaskCreate(usb_task, "usb_task", WORKER_TASK_STACK_SIZE, NULL, WORKER_TASK_PRIORITY, NULL);
     xTaskCreate(ffb_task, "ffb_task", WORKER_TASK_STACK_SIZE, NULL, WORKER_TASK_PRIORITY, NULL);
+    xTaskCreate(adc_task, "adc_task", WORKER_TASK_STACK_SIZE, NULL, WORKER_TASK_PRIORITY, NULL);
     gptimer_init();
     TickType_t last = xTaskGetTickCount();
     while (true) {

@@ -20,7 +20,7 @@ void foc_setup(void) {
     // aligning voltage
     motor.voltage_sensor_align = VOLTAGE_SENSOR_ALIGN;
     // choose FOC modulation (optional)
-    motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
+    motor.foc_modulation = FOCModulationType::SVPWM;
     // set motion control loop to be used
     motor.controller = MotionControlType::torque;
     // set torque control loop to be used

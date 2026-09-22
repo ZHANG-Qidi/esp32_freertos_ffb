@@ -499,7 +499,7 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
 
             break;
 
-        case FOCModulationType::SpaceVectorPWM:
+        case FOCModulationType::SpaceVectorPWM: {
             // Nice video explaining the SpaceVectorModulation (SVPWM) algorithm
             // https://www.youtube.com/watch?v=QMSWUMEAejg
 
@@ -583,6 +583,45 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
             Ub = Tb * driver->voltage_limit;
             Uc = Tc * driver->voltage_limit;
             break;
+        }
+        case FOCModulationType::SVPWM: {
+            // angle normalization in between 0 and 2pi
+            // only necessary if using _sin and _cos - approximation functions
+            angle_el = _normalizeAngle(angle_el);
+            float Uout;
+            // a bit of optitmisation
+            if (Ud) {  // only if Ud and Uq set
+                // _sqrt is an approx of sqrt (3-4% error)
+                Uout = _sqrt(Ud * Ud + Uq * Uq) / driver->voltage_limit;
+            } else {  // only Uq available - no need for atan2 and sqrt
+                Uout = Uq / driver->voltage_limit;
+            }
+            float fundamental_u = _sin(_normalizeAngle(angle_el - M_TWOPI / 3.0f));
+            float fundamental_v = _sin(_normalizeAngle(angle_el));
+            float fundamental_w = _sin(_normalizeAngle(angle_el + M_TWOPI / 3.0f));
+#define THIRD_HARMONIC 1
+#if THIRD_HARMONIC
+            float harmonic_third = _sin(_normalizeAngle(angle_el * 3)) * M_SQRT3 / 9.f;
+            fundamental_u = fundamental_u * 2.f / M_SQRT3 + harmonic_third;
+            fundamental_v = fundamental_v * 2.f / M_SQRT3 + harmonic_third;
+            fundamental_w = fundamental_w * 2.f / M_SQRT3 + harmonic_third;
+#endif
+            float fundamental_u_t = (fundamental_u * Uout + 1.0f) / 2.f;
+            float fundamental_v_t = (fundamental_v * Uout + 1.0f) / 2.f;
+            float fundamental_w_t = (fundamental_w * Uout + 1.0f) / 2.f;
+#define MIN_SHIFT 0
+#if MIN_SHIFT
+            float fundamental_t_min = fundamental_u_t < fundamental_v_t ? fundamental_u_t : fundamental_v_t;
+            fundamental_t_min = fundamental_w_t < fundamental_t_min ? fundamental_w_t : fundamental_t_min;
+            fundamental_u_t -= fundamental_t_min;
+            fundamental_v_t -= fundamental_t_min;
+            fundamental_w_t -= fundamental_t_min;
+#endif
+            Ua = fundamental_u_t * driver->voltage_limit;
+            Ub = fundamental_v_t * driver->voltage_limit;
+            Uc = fundamental_w_t * driver->voltage_limit;
+            break;
+        }
     }
 
     // set the voltages in driver

@@ -256,6 +256,9 @@ void Commander::motor(FOCMotor *motor, char *user_command) {
                         case FOCModulationType::Trapezoid_150:
                             println(F("Trap 150"));
                             break;
+                        case FOCModulationType::SVPWM:
+                            println(F("SVPWM"));
+                            break;
                     }
                     break;
                 case SCMD_PWMMOD_CENTER:  // centered modulation

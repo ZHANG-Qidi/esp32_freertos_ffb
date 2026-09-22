@@ -1,10 +1,12 @@
 #include "usb_loop.h"
 
+#include "adc_loop.h"
 #include "esp_log.h"
 #include "ffb_setup.h"
 #include "foc_loop.h"
 #include "hidReportDesc.h"
 #include "tusb.h"
+
 static const char *TAG = "usb_loop";
 static void dump_hex(const uint8_t *buf, int len) {
     char line[256];
@@ -101,5 +103,8 @@ void usb_loop(void) {
     foc_output(&wheel_rad);
     float wheel_rad_clamped = wheel_rad > WHEEL_HALF ? WHEEL_HALF : (wheel_rad < -WHEEL_HALF ? -WHEEL_HALF : wheel_rad);
     joy.axis_x = JOYSTIC_AXIS_LOGICAL_MID + wheel_rad_clamped / WHEEL_HALF * JOYSTIC_AXIS_LOGICAL_MID;
+    joy.axis_rx = JOYSTIC_AXIS_LOGICAL_MAX * adc_output(0);
+    joy.axis_ry = JOYSTIC_AXIS_LOGICAL_MAX * adc_output(1);
+    joy.axis_rz = JOYSTIC_AXIS_LOGICAL_MAX * adc_output(2);
     tud_hid_report(TLID, &joy, sizeof(hid_joystick_input_t));
 }
