@@ -20,8 +20,6 @@ void foc_loop(void) {
     float damping = damper * motor.shaft_velocity / DAMPING_MAX_VELOCITY;
     float torque_ratio = constant_force - damping;
     float angle = motor.shaft_angle;
-    const float STOP_ZONE = 0.1f;
-    const float STOP_FORCE = 0.3f;
     if (angle < -WHEEL_HALF) {
         float x = (-WHEEL_HALF - angle) / STOP_ZONE;
         x = x > 1.0f ? 1.0f : x;

@@ -2,17 +2,22 @@
 #define _FFB_SETUP_H_
 #include <math.h>
 #include <stdint.h>
+
+#include "FFB_config.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 //******************************** FFB Configuration //********************************
-#define MOTOR_GAIN_DAMPING (1.0f)
-#define MOTOR_GAIN_DAMPING_DR2 (0.5f)
-#define MOTOR_GAIN_CONSTANT (0.2f)
+#define MOTOR_GAIN_DAMPING (CONFIG_FFB_DAMPING_GAIN)
+#define MOTOR_GAIN_DAMPING_DR2 (CONFIG_FFB_DAMPING_DR2_GAIN)
+#define MOTOR_GAIN_CONSTANT (CONFIG_FFB_CONSTANT_FORCE_GAIN)
+#define STOP_ZONE (CONFIG_FFB_STOP_ZONE_RAD)
+#define STOP_FORCE (CONFIG_FFB_STOP_FORCE)
+#define WHEEL_HALF (CONFIG_FFB_WHEEL_HALF_RANGE_RAD)
 //******************************** USB JOYSTICK INPUT REPORT //********************************
 #define JOYSTIC_AXIS_LOGICAL_MID (16383.5f)
 #define JOYSTIC_AXIS_LOGICAL_MAX (32767.0f)
-#define WHEEL_HALF (M_PI * 1.5f)
 typedef struct __attribute__((packed)) {
     uint32_t axis_x;
     uint32_t axis_y;

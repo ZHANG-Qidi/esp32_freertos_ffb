@@ -171,17 +171,13 @@ void _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const in
 }
 #endif
 
-const static char *TAG = "EXAMPLE";
+const static char *TAG = "Arduino_HAL";
 
-#if SOC_ADC_ATTEN_NUM <= 1
-#define EXAMPLE_ADC_ATTEN ADC_ATTEN_DB_0
-#else
-#define EXAMPLE_ADC_ATTEN ADC_ATTEN_DB_12
-#endif
-
-#define EXAMPLE_ADC1_CHAN0 ADC_CHANNEL_3
-#define EXAMPLE_ADC1_CHAN1 ADC_CHANNEL_4
-#define EXAMPLE_ADC1_CHAN2 ADC_CHANNEL_5
+#define EXAMPLE_ADC_ATTEN CONFIG_ARDUINO_ADC_ATTEN
+#define EXAMPLE_ADC_UNIT CONFIG_ARDUINO_ADC_UNIT
+#define EXAMPLE_ADC1_CHAN0 CONFIG_ARDUINO_ADC_CHANNEL_0
+#define EXAMPLE_ADC1_CHAN1 CONFIG_ARDUINO_ADC_CHANNEL_1
+#define EXAMPLE_ADC1_CHAN2 CONFIG_ARDUINO_ADC_CHANNEL_2
 
 static int adc_raw[3];
 static bool example_adc_calibration_init(adc_unit_t unit, adc_channel_t channel, adc_atten_t atten, adc_cali_handle_t *out_handle);
@@ -199,22 +195,22 @@ void analogReference(uint8_t mode) {
     static adc_cali_handle_t adc1_cali_chan2_handle = NULL;
     if (!mode) {
         //-------------ADC1 Init---------------//
-        init_config1.unit_id = ADC_UNIT_1;
+        init_config1.unit_id = EXAMPLE_ADC_UNIT;
         ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
 
         //-------------ADC1 Config---------------//
         adc_oneshot_chan_cfg_t config = {
             .atten = EXAMPLE_ADC_ATTEN,
-            .bitwidth = ADC_BITWIDTH_DEFAULT,
+            .bitwidth = CONFIG_ARDUINO_ADC_BITWIDTH,
         };
         ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, EXAMPLE_ADC1_CHAN0, &config));
         ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, EXAMPLE_ADC1_CHAN1, &config));
         ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, EXAMPLE_ADC1_CHAN2, &config));
 
         //-------------ADC1 Calibration Init---------------//
-        do_calibration1_chan0 = example_adc_calibration_init(ADC_UNIT_1, EXAMPLE_ADC1_CHAN0, EXAMPLE_ADC_ATTEN, &adc1_cali_chan0_handle);
-        do_calibration1_chan1 = example_adc_calibration_init(ADC_UNIT_1, EXAMPLE_ADC1_CHAN1, EXAMPLE_ADC_ATTEN, &adc1_cali_chan1_handle);
-        do_calibration1_chan2 = example_adc_calibration_init(ADC_UNIT_1, EXAMPLE_ADC1_CHAN2, EXAMPLE_ADC_ATTEN, &adc1_cali_chan2_handle);
+        do_calibration1_chan0 = example_adc_calibration_init(EXAMPLE_ADC_UNIT, EXAMPLE_ADC1_CHAN0, EXAMPLE_ADC_ATTEN, &adc1_cali_chan0_handle);
+        do_calibration1_chan1 = example_adc_calibration_init(EXAMPLE_ADC_UNIT, EXAMPLE_ADC1_CHAN1, EXAMPLE_ADC_ATTEN, &adc1_cali_chan1_handle);
+        do_calibration1_chan2 = example_adc_calibration_init(EXAMPLE_ADC_UNIT, EXAMPLE_ADC1_CHAN2, EXAMPLE_ADC_ATTEN, &adc1_cali_chan2_handle);
     } else {
         // Tear Down
         ESP_ERROR_CHECK(adc_oneshot_del_unit(adc1_handle));
@@ -252,7 +248,7 @@ static bool example_adc_calibration_init(adc_unit_t unit, adc_channel_t channel,
             .unit_id = unit,
             .chan = channel,
             .atten = atten,
-            .bitwidth = ADC_BITWIDTH_DEFAULT,
+            .bitwidth = CONFIG_ARDUINO_ADC_BITWIDTH,
         };
         ret = adc_cali_create_scheme_curve_fitting(&cali_config, &handle);
         if (ret == ESP_OK) {
@@ -267,7 +263,7 @@ static bool example_adc_calibration_init(adc_unit_t unit, adc_channel_t channel,
         adc_cali_line_fitting_config_t cali_config = {
             .unit_id = unit,
             .atten = atten,
-            .bitwidth = ADC_BITWIDTH_DEFAULT,
+            .bitwidth = CONFIG_ARDUINO_ADC_BITWIDTH,
         };
         ret = adc_cali_create_scheme_line_fitting(&cali_config, &handle);
         if (ret == ESP_OK) {

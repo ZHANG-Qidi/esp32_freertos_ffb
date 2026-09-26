@@ -8,10 +8,10 @@ extern "C" {
 #endif
 
 // I2C
-#define I2C_MASTER_NUM ((i2c_port_num_t)CONFIG_ARDUINO_I2C_HOST_NUM) /*!< I2C port number for master dev */
-#define I2C_MASTER_SCL_IO (CONFIG_ARDUINO_IIC_SCL)                   /*!< GPIO number used for I2C master clock */
-#define I2C_MASTER_SDA_IO (CONFIG_ARDUINO_IIC_SDA)                   /*!< GPIO number used for I2C master data  */
-#define I2C_MASTER_FREQ_HZ (400000)                                  /*!< I2C master clock frequency */
+#define I2C_MASTER_NUM ((i2c_port_num_t)CONFIG_ARDUINO_I2C_HOST_NUM)
+#define I2C_MASTER_SCL_IO (CONFIG_ARDUINO_I2C_SCL)
+#define I2C_MASTER_SDA_IO (CONFIG_ARDUINO_I2C_SDA)
+#define I2C_MASTER_FREQ_HZ (CONFIG_ARDUINO_I2C_FREQ_HZ)
 #define I2C_MASTER_TIMEOUT_MS (1000)
 
 // SPI
@@ -20,6 +20,7 @@ extern "C" {
 #define SPI_MASTER_MISO_IO (CONFIG_ARDUINO_SPI_MISO)
 #define SPI_MASTER_SCLK_IO (CONFIG_ARDUINO_SPI_CLK)
 #define SPI_MASTER_CS_IO (CONFIG_ARDUINO_SPI_CS0)
+#define SPI_MASTER_BAUD_RATE (CONFIG_ARDUINO_SPI_BAUD_RATE)
 
 // UART
 #define UART_MASTER_NUM ((uart_port_t)CONFIG_ARDUINO_UART_PORT_NUM)
@@ -27,9 +28,9 @@ extern "C" {
 #define UART_MASTER_RX_IO (CONFIG_ARDUINO_UART_RXD)
 
 // ADC
-#define ADC_GPIO_0 (4)
-#define ADC_GPIO_1 (5)
-#define ADC_GPIO_2 (6)
+#define ADC_GPIO_0 (CONFIG_ARDUINO_ADC_GPIO_0)
+#define ADC_GPIO_1 (CONFIG_ARDUINO_ADC_GPIO_1)
+#define ADC_GPIO_2 (CONFIG_ARDUINO_ADC_GPIO_2)
 
 #ifdef __cplusplus
 }

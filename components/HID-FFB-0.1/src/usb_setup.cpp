@@ -80,7 +80,6 @@ void usb_setup(void) {
     generate_usb_serial();
     string_desc_arr[3] = usb_serial;
     tinyusb_config_t tusb_cfg = TINYUSB_DEFAULT_CONFIG();
-    // tusb_cfg.descriptor.device = NULL;
     tusb_cfg.descriptor.device = &desc_device;
     tusb_cfg.descriptor.full_speed_config = desc_configuration;
     tusb_cfg.descriptor.string = string_desc_arr;

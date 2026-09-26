@@ -1,9 +1,17 @@
 #include "foc_setup.h"
 
 #include "SimpleFOC.h"
+
 // magnetic sensor
+#if defined(CONFIG_FFB_MagneticSensorSPI)
 // magnetic sensor instance - SPI
 MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, SPI_MASTER_CS_IO);
+#endif
+// #define CONFIG_FFB_MagneticSensorIIC
+#if defined(CONFIG_FFB_MagneticSensorIIC)
+// magnetic sensor instance - I2C
+MagneticSensorI2C sensor = MagneticSensorI2C(AS5600_I2C);
+#endif
 // BLDC motor & driver instance
 BLDCMotor motor = BLDCMotor(BLDC_MOTOR_PP);
 static BLDCDriver3PWM driver = BLDCDriver3PWM(MOTOR_U, MOTOR_V, MOTOR_W, MOTOR_EN);
