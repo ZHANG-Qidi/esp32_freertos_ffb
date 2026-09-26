@@ -6,6 +6,7 @@
 #include "adc_setup.h"
 #include "driver/gpio.h"
 #include "driver/gptimer.h"
+#include "esp_private/usb_phy.h"
 #include "ffb_loop.h"
 #include "ffb_setup.h"
 #include "foc_loop.h"
@@ -94,11 +95,33 @@ void foc_task(__unused void *params) {
         foc_loop();
     }
 }
+static usb_phy_handle_t phy_hdl;
+bool usb_init(uint8_t rhport, bool is_host) {
+    (void)rhport;
+    // Configure USB PHY
+    usb_phy_config_t phy_conf = {
+        .controller = USB_PHY_CTRL_OTG,
+        .target = USB_PHY_TARGET_INT,
+        .otg_mode = USB_OTG_MODE_DEVICE,
+        .otg_speed = USB_PHY_SPEED_UNDEFINED,
+        .ext_io_conf = nullptr,
+        .otg_io_conf = nullptr,
+    };
+    esp_err_t const err = usb_new_phy(&phy_conf, &phy_hdl);
+    if (err != ESP_OK) {
+        printf("usb_new_phy failed: %s\r\n", esp_err_to_name(err));
+        phy_hdl = NULL;
+        return false;
+    }
+    return true;
+}
 void usb_task(__unused void *params) {
+    usb_init(BOARD_TUD_RHPORT, false);
     usb_setup();
-    TickType_t last = xTaskGetTickCount();
     for (;;) {
-        vTaskDelayUntil(&last, pdMS_TO_TICKS(USB_POLLING_INTERVAL));
+        // put this thread to waiting state until there is new events
+        tud_task();
+        // following code only run if tud_task() process at least 1 event
         usb_loop();
     }
 }
@@ -107,6 +130,12 @@ void ffb_task(__unused void *params) {
     for (;;) {
         vTaskDelayUntil(&last, pdMS_TO_TICKS(USB_POLLING_INTERVAL));
     }
+}
+#include "esp_mac.h"
+extern "C" size_t board_get_unique_id(uint8_t id[], size_t max_len) {
+    // use factory default MAC as serial ID
+    esp_efuse_mac_get_default(id);
+    return 6;
 }
 void adc_task(__unused void *params) {
     adc_setup();

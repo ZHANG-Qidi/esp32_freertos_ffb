@@ -20,6 +20,7 @@ idf_component_register(
         ArduinoCore-avr-1.8.7
         Arduino-FOC-2.2
         HID-FFB-0.1
+        tinyusb-0.21.0
 )
 
 target_compile_options(${COMPONENT_LIB} PRIVATE

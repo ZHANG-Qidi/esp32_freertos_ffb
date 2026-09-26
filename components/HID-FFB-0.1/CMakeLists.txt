@@ -17,7 +17,7 @@ idf_component_register(
         esp_driver_ledc
         esp_driver_mcpwm
         esp_timer
-        esp_tinyusb
+        tinyusb-0.21.0
         Arduino-FOC-2.2
         ArduinoCore-avr-1.8.7
 )

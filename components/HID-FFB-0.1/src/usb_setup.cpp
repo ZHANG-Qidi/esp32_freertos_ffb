@@ -1,15 +1,9 @@
 #include "usb_setup.h"
 
-#include <cstdio>
-
-#include "esp_log.h"
-#include "esp_mac.h"
+#include "bsp/board_api.h"
 #include "hidReportDesc.h"
-#include "tinyusb.h"
-#include "tinyusb_default_config.h"
+#include "tusb.h"
 #include "wheel_registry.h"
-
-static const char *TAG = "usb_setup";
 //--------------------------------------------------------------------+
 // Device Descriptors
 //--------------------------------------------------------------------+
@@ -29,6 +23,9 @@ tusb_desc_device_t const desc_device = {
     .iSerialNumber = 0x03,
     .bNumConfigurations = 0x01,
 };
+// Invoked when received GET DEVICE DESCRIPTOR
+// Application return pointer to descriptor
+uint8_t const *tud_descriptor_device_cb(void) { return (uint8_t const *)&desc_device; }
 //--------------------------------------------------------------------+
 // HID Report Descriptor
 //--------------------------------------------------------------------+
@@ -51,6 +48,14 @@ uint8_t const desc_configuration[] = {
     // Interface number, string index, protocol, report descriptor len, EP In address, size & polling interval
     TUD_HID_INOUT_DESCRIPTOR(ITF_NUM_HID, 0, HID_ITF_PROTOCOL_NONE, sizeof(desc_hid_report), EPNUM_HID, (EPNUM_HID & 0x0f), CFG_TUD_HID_EP_BUFSIZE, USB_POLLING_INTERVAL),
 };
+// Invoked when received GET CONFIGURATION DESCRIPTOR
+// Application return pointer to descriptor
+// Descriptor contents must exist long enough for transfer to complete
+uint8_t const *tud_descriptor_configuration_cb(uint8_t index) {
+    (void)index;  // for multiple configurations
+    // This example use the same configuration for both high and full speed mode
+    return desc_configuration;
+}
 //--------------------------------------------------------------------+
 // String Descriptors
 //--------------------------------------------------------------------+
@@ -68,25 +73,54 @@ char const *string_desc_arr[] = {
     "TinyUSB Device",            // 2: Product
     NULL,                        // 3: Serials will use unique ID if possible
 };
-static char usb_serial[13];
-static void generate_usb_serial(void) {
-    uint8_t mac[6];
-    esp_efuse_mac_get_default(mac);
-    snprintf(usb_serial, sizeof(usb_serial), "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-    ESP_LOGI(TAG, "USB Serial: %s", usb_serial);
+//--------------------------------------------------------------------+
+// Weak board API (to be optionally implemented by board)
+//--------------------------------------------------------------------+
+TU_ATTR_WEAK size_t board_get_unique_id(uint8_t id[], size_t max_len) {
+    (void)max_len;
+    // fixed serial string is 01234567889ABCDEF
+    uint32_t *uid32 = (uint32_t *)(uintptr_t)id;
+    uid32[0] = 0x67452301u;
+    uid32[1] = 0xEFCDAB89u;
+    return 8;
+}
+static uint16_t _desc_str[32 + 1];
+// Invoked when received GET STRING DESCRIPTOR request
+// Application return pointer to descriptor, whose contents must exist long enough for transfer to complete
+uint16_t const *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
+    (void)langid;
+    size_t chr_count;
+    switch (index) {
+        case STRID_LANGID:
+            memcpy(&_desc_str[1], string_desc_arr[0], 2);
+            chr_count = 1;
+            break;
+        case STRID_SERIAL:
+            chr_count = board_usb_get_serial(_desc_str + 1, 32);
+            break;
+        default:
+            // Note: the 0xEE index string is a Microsoft OS 1.0 Descriptors.
+            // https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-defined-usb-descriptors
+            if (!(index < sizeof(string_desc_arr) / sizeof(string_desc_arr[0]))) return NULL;
+            const char *str = string_desc_arr[index];
+            // Cap at max char
+            chr_count = strlen(str);
+            size_t const max_count = sizeof(_desc_str) / sizeof(_desc_str[0]) - 1;  // -1 for string type
+            if (chr_count > max_count) chr_count = max_count;
+            // Convert ASCII string into UTF-16
+            for (size_t i = 0; i < chr_count; i++) {
+                _desc_str[1 + i] = str[i];
+            }
+            break;
+    }
+    // first byte is length (including header), second byte is string type
+    _desc_str[0] = (uint16_t)((TUSB_DESC_STRING << 8) | (2 * chr_count + 2));
+    return _desc_str;
 }
 void usb_setup(void) {
-    ESP_LOGI(TAG, "USB initialization");
-    generate_usb_serial();
-    string_desc_arr[3] = usb_serial;
-    tinyusb_config_t tusb_cfg = TINYUSB_DEFAULT_CONFIG();
-    tusb_cfg.descriptor.device = &desc_device;
-    tusb_cfg.descriptor.full_speed_config = desc_configuration;
-    tusb_cfg.descriptor.string = string_desc_arr;
-    tusb_cfg.descriptor.string_count = sizeof(string_desc_arr) / sizeof(string_desc_arr[0]);
-#if (TUD_OPT_HIGH_SPEED)
-    tusb_cfg.descriptor.high_speed_config = desc_configuration;
-#endif  // TUD_OPT_HIGH_SPEED
-    ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
-    ESP_LOGI(TAG, "USB initialization DONE");
+    // init device stack on configured roothub port
+    // This should be called after scheduler/kernel is started.
+    // Otherwise it could cause kernel issue since USB IRQ handler does use RTOS queue API.
+    tusb_rhport_init_t dev_init = {.role = TUSB_ROLE_DEVICE, .speed = TUSB_SPEED_AUTO};
+    tusb_init(BOARD_TUD_RHPORT, &dev_init);
 }
